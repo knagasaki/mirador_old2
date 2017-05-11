@@ -257,7 +257,6 @@
         var _this = this;
         return _this.jsonLd.viewingDirection;
     }
-
   };
 
 }(Mirador));
