@@ -81,7 +81,12 @@
       _this.eventEmitter.publish('DESTROY_EVENTS.'+_this.id);
 
       _this.removeBookView();
-
+      if(_this.manifest.getViewingDirection() == 'right-to-left'){
+        _this.vDirectionStatus = 'rtl';
+      }
+      else{
+        _this.vDirectionStatus = '';
+      }
       //reset imagemodes and then remove any imageModes that are not available as a focus
       this.imageModes = this.originalImageModes;
       this.imageModes = jQuery.map(this.imageModes, function(value, index) {
@@ -95,7 +100,15 @@
         _this.canvasID = _this.imagesList[0]['@id'];
       }
       _this.canvases = _this.buildCanvasesIndex(_this.manifest.getCanvases());
-
+      if(_this.vDirectionStatus == 'rtl'){
+          _this.imagesListLtr = _this.imagesList.concat();
+          _this.imagesListRtl = _this.imagesList.concat();
+          _this.imagesListRtl.reverse();
+      }
+      else{
+          _this.imagesListRtl = [];
+          _this.imagesListLtr = [];
+      }
       this.annoEndpointAvailable = !jQuery.isEmptyObject(_this.state.getStateProperty('annotationEndpoint'));
       if (!this.canvasControls.annotations.annotationLayer) {
         this.canvasControls.annotations.annotationCreation = false;
@@ -538,6 +551,9 @@
               canvasID: _this.canvasID,
               canvases: _this.canvases,
               imagesList: _this.imagesList,
+              imagesListLtr: _this.imagesListLtr,
+              imagesListRtl: _this.imagesListRtl,
+              vDirectionStatus: _this.vDirectionStatus,
               thumbInfo: {thumbsHeight: 80, listingCssCls: 'panel-listing-thumbs', thumbnailCls: 'panel-thumbnail-view'}
             });
           }
@@ -735,7 +751,10 @@
           eventEmitter: this.eventEmitter,
           windowId: this.id,
           canvasID: this.canvasID,
-          imagesList: this.imagesList
+          imagesList: this.imagesList,
+          imagesListLtr: this.imagesListLtr,
+          vDirectionStatus: this.vDirectionStatus
+
         });
       } else {
         var view = this.focusModules.ThumbnailsView;
@@ -757,11 +776,14 @@
           canvasID: canvasID,
           canvases: this.canvases,
           imagesList: this.imagesList,
+          imagesListRtl: this.imagesListRtl,
+          imagesListLtr: this.imagesListLtr,
           osdOptions: this.windowOptions,
           bottomPanelAvailable: this.bottomPanelAvailable,
           annoEndpointAvailable: this.annoEndpointAvailable,
           canvasControls: this.canvasControls,
-          annotationState : this.canvasControls.annotations.annotationState
+          annotationState : this.canvasControls.annotations.annotationState,
+          vDirectionStatus: this.vDirectionStatus
         });
         } else {
           var view = this.focusModules.ImageView;
@@ -784,8 +806,11 @@
           eventEmitter: this.eventEmitter,
           canvasID: canvasID,
           imagesList: this.imagesList,
+          imagesListRtl: this.imagesListRtl,
+          imagesListLtr: this.imagesListLtr,
           osdOptions: this.windowOptions,
-          bottomPanelAvailable: this.bottomPanelAvailable
+          bottomPanelAvailable: this.bottomPanelAvailable,
+          vDirectionStatus: this.vDirectionStatus
         });
       } else {
         var view = this.focusModules.BookView;
@@ -795,6 +820,9 @@
     },
 
     toggleScrollView: function(canvasID) {
+      if(this.vDirectionStatus == 'rtl'){
+          this.imagesList = this.imagesListRtl.concat();
+      }
       this.canvasID = canvasID;
       if (this.focusModules.ScrollView === null) {
         var containerHeight = this.element.find('.view-container').height();
@@ -806,7 +834,9 @@
           windowId: this.id,
           canvasID: this.canvasID,
           imagesList: this.imagesList,
-          thumbInfo: {thumbsHeight: Math.floor(containerHeight * this.scrollImageRatio), listingCssCls: 'scroll-listing-thumbs', thumbnailCls: 'scroll-view'}
+          imagesListLtr: this.imagesListLtr,
+          thumbInfo: {thumbsHeight: Math.floor(containerHeight * this.scrollImageRatio), listingCssCls: 'scroll-listing-thumbs', thumbnailCls: 'scroll-view'},
+          vDirectionStatus: this.vDirectionStatus
         });
       } else {
         var view = this.focusModules.ScrollView;
